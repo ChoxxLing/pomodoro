@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-active="work">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro — Focus Timer</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============================================================
+       NOTIFICATION BANNER — slides from top on session change
+  ============================================================ -->
+  <div class="notif-banner" id="notifBanner" role="alert" aria-live="polite">
+    <span class="notif-emoji" id="notifEmoji">🍅</span>
+    <span class="notif-msg"   id="notifMsg">Session complete!</span>
+  </div>
+
+  <!-- ============================================================
+       SETTINGS DRAWER — slides in from the right
+  ============================================================ -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="settings-drawer" id="settingsDrawer" aria-label="Settings panel">
+
+    <div class="drawer-head">
+      <h2 class="drawer-title">Settings</h2>
+      <button class="icon-btn" id="closeDrawer" aria-label="Close settings">✕</button>
+    </div>
+
+    <!-- Alarm sound -->
+    <section class="drawer-section">
+      <h3 class="drawer-section-label">Alarm Sound</h3>
+      <div class="drawer-row">
+        <label for="soundSelect">Sound</label>
+        <select id="soundSelect" class="sel-input">
+          <option value="bell">Bell</option>
+          <option value="chime">Chime</option>
+          <option value="digital">Digital</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+      <div class="drawer-row">
+        <label for="alarmVolume">Volume</label>
+        <input type="range" id="alarmVolume" class="range-inp" min="0" max="1" step="0.05" value="0.7" />
+      </div>
+      <div class="drawer-row">
+        <label for="muteToggle">Mute all</label>
+        <label class="toggle">
+          <input type="checkbox" id="muteToggle" />
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </section>
+
+    <!--
+      Session Music Upload
+      Each session can have its own uploaded audio file.
+      Stored as Object URL in memory; plays automatically when that session starts.
+    -->
+    <section class="drawer-section">
+      <h3 class="drawer-section-label">Session Music <span class="sub">(auto-plays on start)</span></h3>
+
+      <div class="music-row" id="musicRow-work">
+        <div class="music-info">
+          <span class="music-icon">🍅</span>
+          <div>
+            <span class="music-session">Work</span>
+            <span class="music-fname" id="musicName-work">No file</span>
+          </div>
+        </div>
+        <div class="music-actions">
+          <label class="upload-lbl" for="musicFile-work">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg> Upload
+          </label>
+          <input type="file" id="musicFile-work" class="sr-only" accept="audio/*" data-session="work" />
+          <button class="rm-music hidden" id="musicRm-work" data-session="work">✕</button>
+        </div>
+      </div>
+
+      <div class="music-row" id="musicRow-shortBreak">
+        <div class="music-info">
+          <span class="music-icon">☕</span>
+          <div>
+            <span class="music-session">Short Break</span>
+            <span class="music-fname" id="musicName-shortBreak">No file</span>
+          </div>
+        </div>
+        <div class="music-actions">
+          <label class="upload-lbl" for="musicFile-shortBreak">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg> Upload
+          </label>
+          <input type="file" id="musicFile-shortBreak" class="sr-only" accept="audio/*" data-session="shortBreak" />
+          <button class="rm-music hidden" id="musicRm-shortBreak" data-session="shortBreak">✕</button>
+        </div>
+      </div>
+
+      <div class="music-row" id="musicRow-longBreak">
+        <div class="music-info">
+          <span class="music-icon">🌿</span>
+          <div>
+            <span class="music-session">Long Break</span>
+            <span class="music-fname" id="musicName-longBreak">No file</span>
+          </div>
+        </div>
+        <div class="music-actions">
+          <label class="upload-lbl" for="musicFile-longBreak">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg> Upload
+          </label>
+          <input type="file" id="musicFile-longBreak" class="sr-only" accept="audio/*" data-session="longBreak" />
+          <button class="rm-music hidden" id="musicRm-longBreak" data-session="longBreak">✕</button>
+        </div>
+      </div>
+
+      <div class="drawer-row" style="margin-top:.5rem">
+        <label for="musicVolume">Music Volume</label>
+        <input type="range" id="musicVolume" class="range-inp" min="0" max="1" step="0.05" value="0.6" />
+      </div>
+    </section>
+
+    <!-- Behaviour -->
+    <section class="drawer-section">
+      <h3 class="drawer-section-label">Behaviour</h3>
+      <div class="drawer-row">
+        <label for="autoStart">Auto-start next session</label>
+        <label class="toggle">
+          <input type="checkbox" id="autoStart" />
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <div class="drawer-row">
+        <label for="browserNotif">Browser notifications</label>
+        <label class="toggle">
+          <input type="checkbox" id="browserNotif" />
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+    </section>
+
+    <button class="btn-primary btn-full" id="saveDrawer">Apply Changes</button>
+
+  </aside><!-- /settings-drawer -->
+
+  <!-- ============================================================
+       APP WRAPPER
+  ============================================================ -->
+  <div class="app-wrap">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <div class="logo">
+        <span>🍅</span>
+        <span class="logo-text">Focus</span>
+      </div>
+      <div class="topbar-right">
+        <!-- Now-playing badge (visible when session music plays) -->
+        <div class="now-playing hidden" id="nowPlaying">
+          <span class="np-icon">♪</span>
+          <span class="np-name" id="npName">Music</span>
+          <button class="np-stop" id="npStop" title="Stop music">■</button>
+        </div>
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" title="Toggle theme">
+          <span id="themeIcon">☀️</span>
+        </button>
+        <button class="icon-btn" id="openDrawer" aria-label="Open settings" title="Settings">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         TIMERS ARENA
+         Three timer cards: the active one is large in the center,
+         the two inactive ones are smaller on each side.
+
+         Layout is controlled by `data-active` on the arena element:
+           data-active="work"       → work is centered
+           data-active="shortBreak" → shortBreak is centered
+           data-active="longBreak"  → longBreak is centered
+
+         Each card has two "faces":
+           .active-face  — full hero display (ring, big numbers, controls)
+           .side-face    — compact display (time, duration editor, activate btn)
+
+         CSS transitions animate the cross-fade between faces and
+         the flex-grow/order changes animate the layout shift.
+    ============================================================ -->
+    <section class="timers-arena" id="timersArena" aria-label="Timers">
+
+      <!--
+        WORK TIMER CARD
+        data-session used by JS to identify & style this card.
+        The CSS rule [data-active="work"] #card-work sets order:2 (center).
+      -->
+      <div class="timer-card" id="card-work" data-session="work" role="region" aria-label="Work timer">
+
+        <!-- ── ACTIVE FACE: shown when this card is the active/hero timer ── -->
+        <div class="active-face" aria-hidden="false">
+
+          <div class="af-header">
+            <span class="af-icon">🍅</span>
+            <h2 class="af-label">Work</h2>
+          </div>
+
+          <!-- Focus task input (what am I working on?) -->
+          <input
+            type="text" id="focusInput"
+            class="focus-input"
+            placeholder="What are you working on?"
+            maxlength="70"
+            autocomplete="off"
+          />
+
+          <!-- SVG Circular progress ring -->
+          <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 220 220" aria-hidden="true">
+              <circle class="ring-track" cx="110" cy="110" r="96" />
+              <circle class="ring-arc"   cx="110" cy="110" r="96" id="ringArc" />
+            </svg>
+            <!-- Countdown centered inside ring -->
+            <div class="ring-inner">
+              <div class="big-time" id="bigTime" aria-live="polite">25:00</div>
+              <!-- Cycle progress dots (4 dots = 1 full cycle) -->
+              <div class="cycle-dots" id="cycleDots" aria-label="Pomodoro cycle progress"></div>
+            </div>
+          </div>
+
+          <!-- Timer controls -->
+          <div class="af-controls">
+            <button class="ctrl secondary" id="resetBtn" aria-label="Reset timer" title="Reset">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+              </svg>
+            </button>
+
+            <button class="ctrl primary" id="playPauseBtn" aria-label="Start timer">
+              <!-- Play icon -->
+              <svg class="ico-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="5,3 19,12 5,21"/>
+              </svg>
+              <!-- Pause icon (hidden initially) -->
+              <svg class="ico-pause hidden" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16"/>
+                <rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            </button>
+
+            <button class="ctrl secondary" id="skipBtn" aria-label="Skip to next session" title="Skip">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="5,4 15,12 5,20"/>
+                <line x1="19" y1="4" x2="19" y2="20"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Thin linear progress bar -->
+          <div class="af-progress">
+            <div class="af-progress-fill" id="progressFill"></div>
+          </div>
+
+          <!-- Daily stats strip -->
+          <div class="af-stats">
+            <div class="af-stat">
+              <span class="af-stat-val" id="statToday">0</span>
+              <span class="af-stat-lbl">Today</span>
+            </div>
+            <div class="af-stat-sep"></div>
+            <div class="af-stat">
+              <span class="af-stat-val" id="statCycles">0</span>
+              <span class="af-stat-lbl">Cycles</span>
+            </div>
+            <div class="af-stat-sep"></div>
+            <div class="af-stat">
+              <span class="af-stat-val" id="statFocus">0m</span>
+              <span class="af-stat-lbl">Focus</span>
+            </div>
+          </div>
+
+        </div><!-- /active-face -->
+
+        <!-- ── SIDE FACE: shown when this card is a side (inactive) timer ── -->
+        <div class="side-face" aria-hidden="true">
+
+          <div class="sf-header">
+            <span class="sf-icon">🍅</span>
+            <span class="sf-label">Work</span>
+          </div>
+
+          <!-- Compact time remaining display -->
+          <div class="sf-time" data-session-time="work">25:00</div>
+
+          <!-- Mini progress bar -->
+          <div class="sf-progress">
+            <div class="sf-progress-fill" data-progress="work"></div>
+          </div>
+
+          <!--
+            Editable duration field.
+            Changing this updates the timer duration immediately.
+            When timer is not running → also resets timeLeft.
+            When timer is running    → updates total only (preserves countdown).
+          -->
+          <div class="sf-duration-wrap">
+            <input
+              type="number"
+              class="sf-duration-input"
+              data-duration-session="work"
+              min="1" max="120"
+              value="25"
+              aria-label="Work duration in minutes"
+            />
+            <span class="sf-duration-unit">min</span>
+          </div>
+
+          <!-- Activate button: makes this the center hero timer -->
+          <button class="sf-activate-btn" data-activate="work" aria-label="Activate Work timer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Start
+          </button>
+
+        </div><!-- /side-face -->
+
+      </div><!-- /card-work -->
+
+
+      <!-- SHORT BREAK TIMER CARD -->
+      <div class="timer-card" id="card-shortBreak" data-session="shortBreak" role="region" aria-label="Short break timer">
+
+        <div class="active-face" aria-hidden="true">
+          <div class="af-header">
+            <span class="af-icon">☕</span>
+            <h2 class="af-label">Short Break</h2>
+          </div>
+          <input type="text" class="focus-input" placeholder="Resting…" maxlength="70" autocomplete="off" disabled />
+          <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 220 220" aria-hidden="true">
+              <circle class="ring-track" cx="110" cy="110" r="96" />
+              <circle class="ring-arc"   cx="110" cy="110" r="96" id="ringArc-shortBreak" />
+            </svg>
+            <div class="ring-inner">
+              <div class="big-time" id="bigTime-shortBreak" aria-live="polite">05:00</div>
+              <div class="cycle-dots" id="cycleDots-shortBreak"></div>
+            </div>
+          </div>
+          <div class="af-controls">
+            <button class="ctrl secondary" data-reset="shortBreak" aria-label="Reset short break" title="Reset">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+              </svg>
+            </button>
+            <button class="ctrl primary" data-playpause="shortBreak" aria-label="Start short break">
+              <svg class="ico-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              <svg class="ico-pause hidden" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            </button>
+            <button class="ctrl secondary" data-skip="shortBreak" aria-label="Skip short break" title="Skip">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="5,4 15,12 5,20"/>
+                <line x1="19" y1="4" x2="19" y2="20"/>
+              </svg>
+            </button>
+          </div>
+          <div class="af-progress">
+            <div class="af-progress-fill" id="progressFill-shortBreak"></div>
+          </div>
+          <div class="af-stats">
+            <div class="af-stat"><span class="af-stat-val" id="statToday-sb">0</span><span class="af-stat-lbl">Today</span></div>
+            <div class="af-stat-sep"></div>
+            <div class="af-stat"><span class="af-stat-val" id="statCycles-sb">0</span><span class="af-stat-lbl">Cycles</span></div>
+            <div class="af-stat-sep"></div>
+            <div class="af-stat"><span class="af-stat-val" id="statFocus-sb">0m</span><span class="af-stat-lbl">Focus</span></div>
+          </div>
+        </div>
+
+        <div class="side-face" aria-hidden="true">
+          <div class="sf-header">
+            <span class="sf-icon">☕</span>
+            <span class="sf-label">Short Break</span>
+          </div>
+          <div class="sf-time" data-session-time="shortBreak">05:00</div>
+          <div class="sf-progress">
+            <div class="sf-progress-fill" data-progress="shortBreak"></div>
+          </div>
+          <div class="sf-duration-wrap">
+            <input type="number" class="sf-duration-input" data-duration-session="shortBreak" min="1" max="60" value="5" aria-label="Short break duration in minutes" />
+            <span class="sf-duration-unit">min</span>
+          </div>
+          <button class="sf-activate-btn" data-activate="shortBreak" aria-label="Activate Short Break timer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Start
+          </button>
+        </div>
+
+      </div><!-- /card-shortBreak -->
+
+
+      <!-- LONG BREAK TIMER CARD -->
+      <div class="timer-card" id="card-longBreak" data-session="longBreak" role="region" aria-label="Long break timer">
+
+        <div class="active-face" aria-hidden="true">
+          <div class="af-header">
+            <span class="af-icon">🌿</span>
+            <h2 class="af-label">Long Break</h2>
+          </div>
+          <input type="text" class="focus-input" placeholder="Resting…" maxlength="70" autocomplete="off" disabled />
+          <div class="ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 220 220" aria-hidden="true">
+              <circle class="ring-track" cx="110" cy="110" r="96" />
+              <circle class="ring-arc"   cx="110" cy="110" r="96" id="ringArc-longBreak" />
+            </svg>
+            <div class="ring-inner">
+              <div class="big-time" id="bigTime-longBreak" aria-live="polite">15:00</div>
+              <div class="cycle-dots" id="cycleDots-longBreak"></div>
+            </div>
+          </div>
+          <div class="af-controls">
+            <button class="ctrl secondary" data-reset="longBreak" aria-label="Reset long break" title="Reset">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+              </svg>
+            </button>
+            <button class="ctrl primary" data-playpause="longBreak" aria-label="Start long break">
+              <svg class="ico-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              <svg class="ico-pause hidden" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+              </svg>
+            </button>
+            <button class="ctrl secondary" data-skip="longBreak" aria-label="Skip long break" title="Skip">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="5,4 15,12 5,20"/>
+                <line x1="19" y1="4" x2="19" y2="20"/>
+              </svg>
+            </button>
+          </div>
+          <div class="af-progress">
+            <div class="af-progress-fill" id="progressFill-longBreak"></div>
+          </div>
+          <div class="af-stats">
+            <div class="af-stat"><span class="af-stat-val" id="statToday-lb">0</span><span class="af-stat-lbl">Today</span></div>
+            <div class="af-stat-sep"></div>
+            <div class="af-stat"><span class="af-stat-val" id="statCycles-lb">0</span><span class="af-stat-lbl">Cycles</span></div>
+            <div class="af-stat-sep"></div>
+            <div class="af-stat"><span class="af-stat-val" id="statFocus-lb">0m</span><span class="af-stat-lbl">Focus</span></div>
+          </div>
+        </div>
+
+        <div class="side-face" aria-hidden="true">
+          <div class="sf-header">
+            <span class="sf-icon">🌿</span>
+            <span class="sf-label">Long Break</span>
+          </div>
+          <div class="sf-time" data-session-time="longBreak">15:00</div>
+          <div class="sf-progress">
+            <div class="sf-progress-fill" data-progress="longBreak"></div>
+          </div>
+          <div class="sf-duration-wrap">
+            <input type="number" class="sf-duration-input" data-duration-session="longBreak" min="1" max="120" value="15" aria-label="Long break duration in minutes" />
+            <span class="sf-duration-unit">min</span>
+          </div>
+          <button class="sf-activate-btn" data-activate="longBreak" aria-label="Activate Long Break timer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Start
+          </button>
+        </div>
+
+      </div><!-- /card-longBreak -->
+
+    </section><!-- /timers-arena -->
+
+    <!-- ============================================================
+         TASK MANAGER — full width below the timers
+    ============================================================ -->
+    <section class="tasks-section" aria-label="Task manager">
+
+      <div class="tasks-head">
+        <h2 class="tasks-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          Tasks
+        </h2>
+        <div class="tasks-head-right">
+          <span class="tasks-count-badge" id="tasksBadge">0 / 0</span>
+          <button class="ghost-btn" id="clearDoneBtn">Clear done</button>
+        </div>
+      </div>
+
+      <!-- Add task input -->
+      <div class="add-task-row">
+        <input
+          type="text"
+          id="newTaskInput"
+          class="add-task-input"
+          placeholder="Add a new task and press Enter or click Add…"
+          maxlength="120"
+          autocomplete="off"
+        />
+        <button class="add-task-btn" id="addTaskBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Task
+        </button>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="task-filters" role="tablist">
+        <button class="filter-tab active" data-filter="all"    role="tab">All</button>
+        <button class="filter-tab"        data-filter="active" role="tab">Active</button>
+        <button class="filter-tab"        data-filter="done"   role="tab">Done</button>
+      </div>
+
+      <!-- Task list (populated by JS) -->
+      <ul class="task-list" id="taskList" aria-live="polite">
+        <li class="task-empty" id="taskEmpty">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3">
+            <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/>
+          </svg>
+          <p>No tasks yet.<br/>Add one above to get started!</p>
+        </li>
+      </ul>
+
+    </section><!-- /tasks-section -->
+
+    <footer class="app-footer">
+      <p>Stay focused, take breaks &mdash; one Pomodoro at a time 🍅</p>
+    </footer>
+
+  </div><!-- /app-wrap -->
+
+  <script src="app.js"></script>
+</body>
+</html>

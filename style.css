@@ -1,0 +1,889 @@
+/* ================================================================
+   POMODORO FOCUS TIMER v3 — style.css
+   Three-card arena layout: active card = hero center,
+   inactive cards = compact sides. Smooth CSS transitions.
+================================================================ */
+
+/* ----------------------------------------------------------------
+   1. DESIGN TOKENS
+---------------------------------------------------------------- */
+:root {
+  --bg:          #0f0e0d;
+  --bg-s:        #171614;
+  --bg-r:        #1f1d1b;
+  --bg-o:        #282523;
+
+  --fg:          #f0ebe3;
+  --fg-2:        #9c9088;
+  --fg-3:        #524b45;
+
+  --accent:      #e8933a;
+  --accent-glow: rgba(232,147,58,.22);
+  --accent-dim:  rgba(232,147,58,.10);
+  --accent-hi:   rgba(232,147,58,.35);
+
+  --teal:        #5aaa8f;
+  --teal-glow:   rgba(90,170,143,.22);
+  --teal-dim:    rgba(90,170,143,.10);
+
+  --danger:      #e05252;
+  --success:     #5aaa8f;
+
+  --bd:          rgba(255,255,255,.07);
+  --bd-s:        rgba(255,255,255,.13);
+
+  --sh-sm: 0 2px 8px rgba(0,0,0,.40);
+  --sh-md: 0 8px 32px rgba(0,0,0,.55);
+  --sh-lg: 0 20px 64px rgba(0,0,0,.65);
+
+  --r-sm: 8px;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --r-xl: 30px;
+
+  /* Transition presets */
+  --ease:      cubic-bezier(.4,0,.2,1);
+  --ease-back: cubic-bezier(.34,1.56,.64,1);
+  --t-fast:    .2s var(--ease);
+  --t-med:     .38s var(--ease);
+  --t-slow:    .55s var(--ease);
+
+  /* Ring */
+  --ring-c:    603.19;  /* 2π × 96 */
+  --ring-col:  var(--accent);
+
+  /* Typography */
+  --fs-xs:  .70rem;
+  --fs-sm:  .84rem;
+  --fs-md:  1rem;
+  --fs-lg:  1.25rem;
+  --fs-xl:  1.7rem;
+  --fs-hero: clamp(3.4rem, 8vw, 5.6rem);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg:    #f5f2ec;
+  --bg-s:  #fdfbf7;
+  --bg-r:  #ece7de;
+  --bg-o:  #e3ddd4;
+  --fg:    #1c1915;
+  --fg-2:  #6a5f55;
+  --fg-3:  #afa297;
+  --accent: #c8601a;
+  --accent-glow: rgba(200,96,26,.15);
+  --accent-dim:  rgba(200,96,26,.08);
+  --accent-hi:   rgba(200,96,26,.25);
+  --bd:    rgba(0,0,0,.08);
+  --bd-s:  rgba(0,0,0,.14);
+  --sh-sm: 0 2px 8px rgba(0,0,0,.07);
+  --sh-md: 0 8px 32px rgba(0,0,0,.09);
+  --sh-lg: 0 20px 64px rgba(0,0,0,.11);
+}
+
+/* Swap accent to teal for break sessions */
+[data-session-type="shortBreak"],
+[data-session-type="longBreak"] {
+  --ring-col:   var(--teal);
+  --accent:     var(--teal);
+  --accent-glow:var(--teal-glow);
+  --accent-dim: var(--teal-dim);
+  --accent-hi:  rgba(90,170,143,.3);
+}
+
+/* ----------------------------------------------------------------
+   2. RESET
+---------------------------------------------------------------- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--fg);
+  min-height:100dvh;
+  transition:background var(--t-slow),color var(--t-fast);
+  /* Subtle noise texture */
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;outline:none}
+input,select{font-family:inherit;color:inherit}
+ul{list-style:none}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.hidden{display:none!important}
+
+/* ----------------------------------------------------------------
+   3. APP SHELL
+---------------------------------------------------------------- */
+.app-wrap{
+  display:flex;
+  flex-direction:column;
+  min-height:100dvh;
+  max-width:1260px;
+  margin:0 auto;
+  padding:0 1.4rem 3rem;
+}
+
+/* ----------------------------------------------------------------
+   4. TOP BAR
+---------------------------------------------------------------- */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.1rem 0 .9rem;
+  border-bottom:1px solid var(--bd);
+  margin-bottom:2rem;
+}
+.logo{display:flex;align-items:center;gap:.45rem;user-select:none;font-size:1.3rem}
+.logo-text{
+  font-family:'Playfair Display',serif;
+  font-weight:700;font-size:var(--fs-lg);letter-spacing:-.02em;
+}
+.topbar-right{display:flex;align-items:center;gap:.6rem}
+
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg-r);border:1px solid var(--bd);
+  color:var(--fg-2);font-size:.95rem;
+  transition:background var(--t-fast),color var(--t-fast),border-color var(--t-fast);
+}
+.icon-btn:hover{background:var(--bg-o);color:var(--fg);border-color:var(--bd-s)}
+
+/* Now-playing badge */
+.now-playing{
+  display:flex;align-items:center;gap:.45rem;
+  background:var(--bg-r);border:1px solid var(--bd-s);
+  border-radius:999px;padding:.28rem .7rem .28rem .55rem;
+  font-size:var(--fs-xs);animation:fadeIn .3s ease both;
+}
+.np-icon{animation:pulse 1.6s ease infinite}
+.np-name{color:var(--fg-2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.np-stop{
+  font-size:.6rem;color:var(--fg-3);padding:.18rem .3rem;
+  border-radius:4px;border:1px solid var(--bd);background:var(--bg-s);
+  transition:color var(--t-fast),border-color var(--t-fast);
+}
+.np-stop:hover{color:var(--danger);border-color:var(--danger)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ----------------------------------------------------------------
+   5. TIMERS ARENA
+   ================================================================
+   LAYOUT SYSTEM:
+   Three .timer-card elements inside a flex container.
+
+   Each card has two "faces" stacked in the DOM:
+     .active-face — hero display (ring, large time, controls)
+     .side-face   — compact display (time, duration input, start btn)
+
+   CSS controls which face is visible based on whether the card
+   has the `active` class. Both faces transition with opacity +
+   transform so the crossfade is smooth.
+
+   The visual ORDER is controlled by `data-active` on the arena:
+     data-active="work"       → work is order:2 (center)
+     data-active="shortBreak" → shortBreak is order:2 (center)
+     data-active="longBreak"  → longBreak is order:2 (center)
+
+   The flex-grow difference (active=3, side=1) makes the center
+   card visually dominant. Combined with the scale on each face,
+   this creates a clear active/inactive hierarchy.
+---------------------------------------------------------------- */
+.timers-arena{
+  display:flex;
+  gap:1.1rem;
+  align-items:stretch;
+  margin-bottom:2.5rem;
+}
+
+/* ── Each timer card ── */
+.timer-card{
+  position:relative;
+  background:var(--bg-s);
+  border:1px solid var(--bd);
+  border-radius:var(--r-xl);
+  overflow:hidden;
+
+  /* Layout animation: flex-grow transitions smoothly */
+  flex:1;
+  min-width:0;
+  transition:
+    flex var(--t-slow),
+    border-color var(--t-med),
+    box-shadow var(--t-med),
+    transform var(--t-slow);
+}
+
+/* Active (hero) card */
+.timer-card.active{
+  flex:3;
+  border-color:var(--accent-hi);
+  box-shadow:0 0 0 1px var(--accent-hi), var(--sh-lg);
+}
+
+/* Side cards: subtle push-back */
+.timer-card:not(.active){
+  transform:scale(.97);
+  opacity:.88;
+  transition:
+    flex var(--t-slow),
+    transform var(--t-slow),
+    opacity var(--t-slow),
+    border-color var(--t-med),
+    box-shadow var(--t-med);
+}
+
+/* ORDER: controls visual position within the flex row.
+   Each data-active state assigns the correct card to position 2 (center). */
+#timersArena[data-active="work"]       #card-shortBreak { order:1 }
+#timersArena[data-active="work"]       #card-work       { order:2 }
+#timersArena[data-active="work"]       #card-longBreak  { order:3 }
+
+#timersArena[data-active="shortBreak"] #card-work       { order:1 }
+#timersArena[data-active="shortBreak"] #card-shortBreak { order:2 }
+#timersArena[data-active="shortBreak"] #card-longBreak  { order:3 }
+
+#timersArena[data-active="longBreak"]  #card-work       { order:1 }
+#timersArena[data-active="longBreak"]  #card-longBreak  { order:2 }
+#timersArena[data-active="longBreak"]  #card-shortBreak { order:3 }
+
+/* ================================================================
+   ACTIVE FACE — the big hero display
+================================================================ */
+.active-face{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:1.8rem 1.4rem 1.5rem;
+  gap:1.2rem;
+
+  /* Hidden by default; shown on the active card */
+  opacity:0;
+  pointer-events:none;
+  transform:scale(.92);
+  position:absolute;inset:0;
+  transition:opacity var(--t-med),transform var(--t-med);
+  overflow-y:auto;
+}
+
+.timer-card.active .active-face{
+  opacity:1;
+  pointer-events:auto;
+  transform:scale(1);
+  position:relative;inset:auto;
+}
+
+.af-header{display:flex;align-items:center;gap:.6rem}
+.af-icon{font-size:1.5rem}
+.af-label{
+  font-family:'Playfair Display',serif;
+  font-size:var(--fs-xl);font-weight:700;
+  letter-spacing:-.02em;
+}
+
+/* Focus input inside hero card */
+.focus-input{
+  width:100%;background:var(--bg-r);
+  border:1px solid var(--bd);border-radius:var(--r-md);
+  padding:.55rem 1rem;font-size:var(--fs-sm);color:var(--fg);outline:none;
+  transition:border-color var(--t-fast),box-shadow var(--t-fast);
+}
+.focus-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.focus-input::placeholder{color:var(--fg-3)}
+.focus-input:disabled{opacity:.35;cursor:not-allowed}
+
+/* ── SVG Ring ── */
+.ring-wrap{
+  position:relative;
+  width:min(220px,52vw);
+  height:min(220px,52vw);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ring-svg{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  transform:rotate(-90deg);  /* arc starts at top */
+}
+.ring-track{fill:none;stroke:var(--bg-r);stroke-width:8}
+.ring-arc{
+  fill:none;stroke:var(--ring-col);stroke-width:8;stroke-linecap:round;
+  stroke-dasharray:var(--ring-c);stroke-dashoffset:0;
+  transition:stroke-dashoffset 1s linear,stroke var(--t-slow);
+  filter:drop-shadow(0 0 7px var(--accent-glow));
+}
+
+.ring-inner{
+  position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  user-select:none;
+}
+
+.big-time{
+  font-family:'Playfair Display',serif;
+  font-size:var(--fs-hero);font-weight:700;
+  line-height:1;letter-spacing:-.04em;
+  color:var(--fg);
+  transition:color var(--t-fast);
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.72}}
+.big-time.ticking{animation:pulse 2s ease infinite}
+
+/* Cycle dots */
+.cycle-dots{display:flex;gap:5px;margin-top:.2rem}
+.cdot{
+  width:7px;height:7px;border-radius:50%;
+  border:1.5px solid var(--accent);background:transparent;
+  transition:background var(--t-fast),border-color var(--t-fast);
+}
+.cdot.done{background:var(--accent);box-shadow:0 0 5px var(--accent-glow)}
+
+/* ── Hero Controls ── */
+.af-controls{display:flex;align-items:center;gap:.9rem}
+
+.ctrl{
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;border:1px solid var(--bd);
+  transition:transform var(--t-fast),background var(--t-fast),box-shadow var(--t-fast),filter var(--t-fast);
+}
+.ctrl:hover{transform:scale(1.07)}
+.ctrl:active{transform:scale(.94)}
+
+.ctrl.secondary{
+  width:48px;height:48px;
+  background:var(--bg-r);color:var(--fg-2);
+}
+.ctrl.secondary:hover{background:var(--bg-o);color:var(--fg);border-color:var(--bd-s)}
+
+.ctrl.primary{
+  width:66px;height:66px;
+  background:var(--accent);color:#fff;
+  border-color:transparent;
+  box-shadow:0 4px 18px var(--accent-glow);
+}
+.ctrl.primary:hover{filter:brightness(1.1);box-shadow:0 6px 26px var(--accent-glow)}
+
+/* ── Hero progress bar ── */
+.af-progress{
+  width:100%;height:4px;
+  background:var(--bg-r);border-radius:999px;overflow:hidden;
+}
+.af-progress-fill{
+  height:100%;width:0%;
+  background:var(--accent);border-radius:999px;
+  transition:width 1s linear,background var(--t-slow);
+  box-shadow:0 0 8px var(--accent-glow);
+}
+
+/* ── Hero stats strip ── */
+.af-stats{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;
+  background:var(--bg-r);border-radius:var(--r-md);
+  border:1px solid var(--bd);padding:.7rem 1rem;
+}
+.af-stat{flex:1;display:flex;flex-direction:column;align-items:center;gap:.2rem}
+.af-stat-val{font-family:'DM Mono',monospace;font-size:var(--fs-xl);font-weight:500;line-height:1}
+.af-stat-lbl{font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--fg-3)}
+.af-stat-sep{width:1px;height:36px;background:var(--bd)}
+
+/* ================================================================
+   SIDE FACE — compact display for inactive timer cards
+================================================================ */
+.side-face{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:.7rem;
+  padding:1.4rem .9rem;
+  height:100%;min-height:260px;
+
+  /* Shown by default; hidden on the active card */
+  opacity:1;
+  pointer-events:auto;
+  transform:scale(1);
+  transition:opacity var(--t-med),transform var(--t-med);
+}
+
+.timer-card.active .side-face{
+  opacity:0;
+  pointer-events:none;
+  transform:scale(1.06);
+  position:absolute;   /* pull out of flow so active-face can fill card */
+}
+
+.sf-header{display:flex;align-items:center;gap:.45rem}
+.sf-icon{font-size:1.1rem}
+.sf-label{font-weight:600;font-size:var(--fs-sm);color:var(--fg-2)}
+
+.sf-time{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.5rem,4vw,2.4rem);
+  font-weight:700;letter-spacing:-.03em;
+  color:var(--fg);text-align:center;
+}
+
+/* Side mini progress bar */
+.sf-progress{
+  width:80%;height:3px;
+  background:var(--bg-r);border-radius:999px;overflow:hidden;
+}
+.sf-progress-fill{
+  height:100%;width:0%;
+  background:var(--accent);border-radius:999px;
+  transition:width 1s linear;
+}
+
+/* Editable duration */
+.sf-duration-wrap{
+  display:flex;align-items:center;gap:.35rem;
+  background:var(--bg-r);border:1px solid var(--bd);
+  border-radius:var(--r-sm);padding:.3rem .6rem;
+  transition:border-color var(--t-fast);
+}
+.sf-duration-wrap:focus-within{border-color:var(--accent)}
+
+.sf-duration-input{
+  width:42px;background:none;border:none;outline:none;
+  text-align:center;
+  font-family:'DM Mono',monospace;font-size:var(--fs-sm);font-weight:500;
+  color:var(--fg);
+  -moz-appearance:textfield;appearance:textfield;
+}
+.sf-duration-input::-webkit-outer-spin-button,
+.sf-duration-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.sf-duration-unit{font-size:var(--fs-xs);color:var(--fg-3);font-weight:500}
+
+/* Activate / Start button */
+.sf-activate-btn{
+  display:flex;align-items:center;gap:.4rem;
+  background:var(--accent);color:#fff;
+  border-radius:var(--r-md);
+  padding:.48rem 1rem;
+  font-size:var(--fs-sm);font-weight:700;
+  box-shadow:0 2px 12px var(--accent-glow);
+  transition:filter var(--t-fast),transform var(--t-fast),box-shadow var(--t-fast);
+  white-space:nowrap;
+}
+.sf-activate-btn:hover{filter:brightness(1.1);transform:scale(1.04);box-shadow:0 4px 20px var(--accent-glow)}
+.sf-activate-btn:active{transform:scale(.96)}
+
+/* ================================================================
+   GLOBAL ring-arc color per session (applied when card becomes active)
+   These override the [data-session-type] root rule per-card.
+================================================================ */
+#card-shortBreak .ring-arc,
+#card-shortBreak .af-progress-fill,
+#card-shortBreak .sf-progress-fill,
+#card-shortBreak .cdot,
+#card-shortBreak .sf-activate-btn{
+  --accent:       var(--teal);
+  --accent-glow:  var(--teal-glow);
+  --ring-col:     var(--teal);
+}
+#card-shortBreak.active{ --accent-hi: rgba(90,170,143,.3); }
+#card-shortBreak .ctrl.primary,
+#card-shortBreak .sf-activate-btn{background:var(--teal);box-shadow:0 4px 18px var(--teal-glow)}
+#card-shortBreak .ctrl.primary:hover{box-shadow:0 6px 26px var(--teal-glow)}
+#card-shortBreak.active{border-color:rgba(90,170,143,.3);box-shadow:0 0 0 1px rgba(90,170,143,.3),var(--sh-lg)}
+
+#card-longBreak .ring-arc,
+#card-longBreak .af-progress-fill,
+#card-longBreak .sf-progress-fill,
+#card-longBreak .cdot,
+#card-longBreak .sf-activate-btn{
+  --accent:       var(--teal);
+  --accent-glow:  var(--teal-glow);
+  --ring-col:     var(--teal);
+}
+#card-longBreak.active{ --accent-hi: rgba(90,170,143,.3); }
+#card-longBreak .ctrl.primary,
+#card-longBreak .sf-activate-btn{background:var(--teal);box-shadow:0 4px 18px var(--teal-glow)}
+#card-longBreak .ctrl.primary:hover{box-shadow:0 6px 26px var(--teal-glow)}
+#card-longBreak.active{border-color:rgba(90,170,143,.3);box-shadow:0 0 0 1px rgba(90,170,143,.3),var(--sh-lg)}
+
+/* ================================================================
+   TRANSITION ANIMATION — "switching" state
+   Applied briefly to arena when switching active session.
+   Prevents layout jumping during face crossfades.
+================================================================ */
+.timers-arena.switching .timer-card{
+  pointer-events:none; /* freeze interaction during transition */
+}
+
+/* ----------------------------------------------------------------
+   6. TASK SECTION
+---------------------------------------------------------------- */
+.tasks-section{
+  background:var(--bg-s);
+  border:1px solid var(--bd);
+  border-radius:var(--r-xl);
+  padding:1.6rem 1.8rem;
+  box-shadow:var(--sh-md);
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+
+.tasks-head{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:.5rem;
+}
+.tasks-title{
+  display:flex;align-items:center;gap:.55rem;
+  font-family:'Playfair Display',serif;
+  font-size:var(--fs-xl);font-weight:700;
+}
+.tasks-head-right{display:flex;align-items:center;gap:.75rem}
+
+.tasks-count-badge{
+  font-family:'DM Mono',monospace;font-size:var(--fs-xs);font-weight:600;
+  background:var(--accent-dim);color:var(--accent);
+  border:1px solid var(--accent-glow);border-radius:999px;
+  padding:.2rem .65rem;
+}
+
+.ghost-btn{
+  font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--fg-3);padding:.26rem .55rem;
+  border-radius:var(--r-sm);border:1px solid transparent;
+  transition:color var(--t-fast),border-color var(--t-fast),background var(--t-fast);
+}
+.ghost-btn:hover{color:var(--danger);border-color:var(--danger);background:rgba(224,82,82,.07)}
+
+/* Add task input */
+.add-task-row{
+  display:flex;gap:.6rem;
+  background:var(--bg-r);border:1px solid var(--bd);
+  border-radius:var(--r-md);padding:.45rem .45rem .45rem 1rem;
+  transition:border-color var(--t-fast),box-shadow var(--t-fast);
+}
+.add-task-row:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+
+.add-task-input{
+  flex:1;background:none;border:none;outline:none;
+  font-size:var(--fs-md);color:var(--fg);min-width:0;
+}
+.add-task-input::placeholder{color:var(--fg-3)}
+
+.add-task-btn{
+  display:flex;align-items:center;gap:.4rem;
+  background:var(--accent);color:#fff;
+  border-radius:calc(var(--r-md) - 3px);
+  padding:.46rem 1rem;
+  font-size:var(--fs-sm);font-weight:700;white-space:nowrap;
+  box-shadow:0 2px 10px var(--accent-glow);
+  transition:filter var(--t-fast),box-shadow var(--t-fast);
+}
+.add-task-btn:hover{filter:brightness(1.1)}
+.add-task-btn:active{filter:brightness(.94)}
+
+/* Filter tabs */
+.task-filters{
+  display:flex;gap:.25rem;
+  background:var(--bg-r);border-radius:var(--r-lg);
+  padding:4px;border:1px solid var(--bd);
+  width:fit-content;
+}
+.filter-tab{
+  flex:1;padding:.36rem .85rem;
+  border-radius:calc(var(--r-lg) - 3px);
+  font-size:var(--fs-xs);font-weight:600;
+  text-transform:uppercase;letter-spacing:.04em;
+  color:var(--fg-3);white-space:nowrap;
+  transition:background var(--t-fast),color var(--t-fast);
+}
+.filter-tab.active{background:var(--bg-o);color:var(--fg)}
+.filter-tab:hover:not(.active){color:var(--fg-2)}
+
+/* Task list */
+.task-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:.5rem;
+  max-height:520px;
+  overflow-y:auto;
+  padding-right:.2rem;
+}
+
+.task-empty{
+  grid-column:1/-1;
+  display:flex;flex-direction:column;align-items:center;gap:.7rem;
+  color:var(--fg-3);text-align:center;padding:2.5rem 1rem;
+  font-size:var(--fs-sm);line-height:1.6;
+}
+
+/* Task item */
+.task-item{
+  display:flex;align-items:flex-start;gap:.65rem;
+  background:var(--bg-r);border:1px solid var(--bd);
+  border-radius:var(--r-md);padding:.75rem .85rem;
+  transition:border-color var(--t-fast),opacity var(--t-fast);
+  animation:slideIn .28s var(--ease) both;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.task-item:hover{border-color:var(--bd-s)}
+
+/* Custom checkbox */
+.task-cb{
+  appearance:none;-webkit-appearance:none;
+  width:18px;height:18px;flex-shrink:0;margin-top:.15rem;
+  border-radius:5px;border:2px solid var(--bd-s);
+  background:transparent;cursor:pointer;
+  position:relative;
+  transition:background var(--t-fast),border-color var(--t-fast);
+}
+.task-cb::after{
+  content:'';position:absolute;
+  top:2px;left:4px;width:8px;height:5px;
+  border-left:2px solid #fff;border-bottom:2px solid #fff;
+  transform:rotate(-45deg) scale(0);
+  transition:transform .16s ease;
+}
+.task-cb:checked{background:var(--accent);border-color:var(--accent)}
+.task-cb:checked::after{transform:rotate(-45deg) scale(1)}
+
+.task-body{flex:1;min-width:0}
+.task-text{
+  font-size:var(--fs-md);color:var(--fg);
+  word-break:break-word;line-height:1.45;
+  transition:color var(--t-fast);
+}
+.task-time{
+  font-family:'DM Mono',monospace;font-size:.68rem;color:var(--fg-3);
+  margin-top:.2rem;display:block;
+}
+
+/* Completed state */
+.task-item.done{opacity:.52}
+.task-item.done .task-text{text-decoration:line-through;color:var(--fg-3)}
+.task-item.done .task-cb{background:var(--success);border-color:var(--success)}
+
+/* Delete button */
+.task-del{
+  width:24px;height:24px;flex-shrink:0;
+  border-radius:5px;border:1px solid transparent;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--fg-3);font-size:.75rem;
+  opacity:0;
+  transition:opacity var(--t-fast),color var(--t-fast),border-color var(--t-fast),background var(--t-fast);
+}
+.task-item:hover .task-del{opacity:1}
+.task-del:hover{color:var(--danger);border-color:var(--danger);background:rgba(224,82,82,.09)}
+
+/* ----------------------------------------------------------------
+   7. NOTIFICATION BANNER
+---------------------------------------------------------------- */
+.notif-banner{
+  position:fixed;top:-70px;left:50%;transform:translateX(-50%);
+  background:var(--bg-r);border:1px solid var(--bd-s);
+  border-radius:var(--r-lg);padding:.65rem 1.35rem;
+  display:flex;align-items:center;gap:.65rem;
+  box-shadow:var(--sh-lg);z-index:200;
+  transition:top .42s var(--ease-back);white-space:nowrap;
+}
+.notif-banner.show{top:1.1rem}
+.notif-emoji{font-size:1.05rem}
+.notif-msg{font-size:var(--fs-sm);font-weight:600}
+
+/* ----------------------------------------------------------------
+   8. SETTINGS DRAWER
+---------------------------------------------------------------- */
+.drawer-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(5px);
+  z-index:300;opacity:0;pointer-events:none;
+  transition:opacity var(--t-med);
+}
+.drawer-overlay.open{opacity:1;pointer-events:all}
+
+.settings-drawer{
+  position:fixed;top:0;right:-400px;
+  width:min(390px,100vw);height:100dvh;
+  background:var(--bg-s);border-left:1px solid var(--bd);
+  padding:1.4rem;display:flex;flex-direction:column;gap:.15rem;
+  overflow-y:auto;z-index:400;box-shadow:var(--sh-lg);
+  transition:right .38s var(--ease);
+}
+.settings-drawer.open{right:0}
+
+.drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
+.drawer-title{font-family:'Playfair Display',serif;font-size:var(--fs-xl);font-weight:700}
+
+.drawer-section{
+  border:1px solid var(--bd);border-radius:var(--r-md);
+  padding:.85rem 1rem;margin-bottom:.6rem;
+}
+.drawer-section-label{
+  font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--accent);margin-bottom:.75rem;
+}
+.drawer-section-label .sub{color:var(--fg-3);text-transform:none;font-weight:400}
+.drawer-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;padding:.38rem 0;
+}
+.drawer-row label:first-child{font-size:var(--fs-sm);color:var(--fg-2)}
+
+/* Select */
+.sel-input{
+  background:var(--bg-r);border:1px solid var(--bd-s);
+  border-radius:var(--r-sm);padding:.28rem .55rem;
+  font-size:var(--fs-sm);outline:none;cursor:pointer;
+}
+.sel-input:focus{border-color:var(--accent)}
+
+/* Range */
+.range-inp{
+  -webkit-appearance:none;appearance:none;
+  width:110px;height:4px;border-radius:999px;
+  background:var(--bg-o);outline:none;cursor:pointer;
+}
+.range-inp::-webkit-slider-thumb{
+  -webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 6px var(--accent-glow);
+  cursor:pointer;transition:transform var(--t-fast);
+}
+.range-inp::-webkit-slider-thumb:hover{transform:scale(1.2)}
+
+/* Toggle */
+.toggle{position:relative;display:inline-block;width:40px;height:22px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;background:var(--bg-o);
+  border-radius:999px;border:1px solid var(--bd-s);
+  transition:background var(--t-fast);
+}
+.toggle-track::before{
+  content:'';position:absolute;top:2px;left:2px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--fg-3);
+  transition:transform var(--t-fast),background var(--t-fast);
+}
+.toggle input:checked+.toggle-track{background:var(--accent);border-color:var(--accent)}
+.toggle input:checked+.toggle-track::before{transform:translateX(18px);background:#fff}
+
+/* Music upload rows */
+.music-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:.6rem;padding:.5rem 0;border-bottom:1px solid var(--bd);
+}
+.music-row:last-of-type{border-bottom:none}
+.music-info{display:flex;align-items:center;gap:.5rem;min-width:0}
+.music-icon{font-size:.95rem;flex-shrink:0}
+.music-session{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--fg-2)}
+.music-fname{display:block;font-size:.66rem;color:var(--fg-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px}
+.music-actions{display:flex;align-items:center;gap:.3rem;flex-shrink:0}
+
+.upload-lbl{
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-size:var(--fs-xs);font-weight:600;color:var(--fg-2);
+  background:var(--bg-r);border:1px solid var(--bd-s);
+  border-radius:var(--r-sm);padding:.26rem .55rem;cursor:pointer;
+  transition:color var(--t-fast),border-color var(--t-fast),background var(--t-fast);
+}
+.upload-lbl:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-dim)}
+
+.rm-music{
+  font-size:.7rem;width:22px;height:22px;border-radius:50%;
+  border:1px solid var(--bd);color:var(--fg-3);
+  display:flex;align-items:center;justify-content:center;
+  transition:color var(--t-fast),border-color var(--t-fast);
+}
+.rm-music:hover{color:var(--danger);border-color:var(--danger)}
+
+/* Primary button */
+.btn-primary{
+  background:var(--accent);color:#fff;
+  border-radius:var(--r-md);padding:.75rem 1.4rem;
+  font-size:var(--fs-sm);font-weight:700;
+  box-shadow:0 4px 14px var(--accent-glow);
+  transition:filter var(--t-fast),transform var(--t-fast);
+}
+.btn-primary:hover{filter:brightness(1.09)}
+.btn-primary:active{transform:scale(.98)}
+.btn-full{width:100%;margin-top:.35rem}
+
+/* ----------------------------------------------------------------
+   9. FOOTER
+---------------------------------------------------------------- */
+.app-footer{margin-top:auto;padding-top:2rem;text-align:center}
+.app-footer p{font-size:var(--fs-xs);color:var(--fg-3)}
+
+/* ----------------------------------------------------------------
+   10. ANIMATIONS (shake, glow-burst on session complete)
+---------------------------------------------------------------- */
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  15%{transform:translateX(-7px)}
+  30%{transform:translateX(7px)}
+  45%{transform:translateX(-4px)}
+  60%{transform:translateX(4px)}
+}
+@keyframes glow-burst{
+  0%{box-shadow:var(--sh-md)}
+  50%{box-shadow:0 0 0 8px var(--accent-glow),var(--sh-md)}
+  100%{box-shadow:var(--sh-md)}
+}
+.timer-card.shake{animation:shake .55s ease both}
+.timer-card.glowing{animation:glow-burst .75s ease forwards}
+
+@keyframes flash-arc{0%,100%{opacity:1}50%{opacity:.12}}
+.ring-arc.flash{animation:flash-arc .35s ease 3}
+
+/* ----------------------------------------------------------------
+   11. RESPONSIVE
+---------------------------------------------------------------- */
+
+/* Medium screens: reduce gap between cards */
+@media(max-width:900px){
+  .timers-arena{gap:.75rem}
+  .af-stats{display:none}    /* hide stats in hero on medium to save space */
+  .ring-wrap{width:min(190px,48vw);height:min(190px,48vw)}
+}
+
+/* Mobile: stack cards vertically */
+@media(max-width:620px){
+  .timers-arena{
+    flex-direction:column;
+    gap:.75rem;
+  }
+
+  /* Remove order-based reordering on mobile (all cards stacked) */
+  #timersArena[data-active] #card-work,
+  #timersArena[data-active] #card-shortBreak,
+  #timersArena[data-active] #card-longBreak{order:unset}
+
+  /* On mobile, active card goes on top */
+  .timer-card.active{order:-1}
+
+  /* Side cards: smaller but still visible */
+  .timer-card:not(.active){
+    transform:scale(1);opacity:.85;
+    flex:none;
+  }
+  .timer-card.active{flex:none}
+
+  /* Side face becomes a horizontal strip on mobile */
+  .side-face{
+    flex-direction:row;flex-wrap:wrap;
+    min-height:auto;padding:1rem 1.1rem;
+    justify-content:space-between;
+  }
+  .sf-header{width:auto}
+  .sf-time{font-size:1.4rem}
+  .sf-progress{width:100%;order:10}
+
+  .timers-arena{margin-bottom:1.5rem}
+  .tasks-section{padding:1.2rem 1.1rem;border-radius:var(--r-lg)}
+  .task-list{grid-template-columns:1fr;max-height:380px}
+  .notif-banner{width:calc(100% - 2rem);justify-content:center}
+}
+
+/* ----------------------------------------------------------------
+   12. SCROLLBAR
+---------------------------------------------------------------- */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bd-s);border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:var(--fg-3)}
